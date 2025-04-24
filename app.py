@@ -2,18 +2,20 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
 
 # ——— Load artifacts ———
 model = joblib.load('models/model.pkl')
 scaler = joblib.load('models/scaler.pkl')
 feature_names = joblib.load('models/feature_names.pkl')
 
-# ——— Load raw data for EDA & category lists ———
-@st.cache
+
 def load_data():
     df = pd.read_csv('data/healthcare-dataset-stroke-data.csv')
     df = df.drop(columns=['id'], errors='ignore')
-    df['bmi'].fillna(df['bmi'].median(), inplace=True)
+    df = df.copy()
+    df['bmi'] = df['bmi'].fillna(df['bmi'].median())
     return df
 
 df = load_data()
@@ -37,7 +39,12 @@ elif section == 'EDA':
     st.bar_chart(df.groupby('gender')['stroke'].mean())
 
     st.write('### Age Distribution')
-    st.histogram = st.pyplot()
+    fig, ax = plt.subplots()
+    ax.hist(df['age'], bins=20)
+    ax.set_xlabel('Age')
+    ax.set_ylabel('Count')
+    st.pyplot(fig)
+    
     hist_values = np.histogram(df['age'], bins=20)[0]
     st.bar_chart(hist_values)
 
